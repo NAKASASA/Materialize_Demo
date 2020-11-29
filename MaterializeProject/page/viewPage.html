@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en" style="height: 100%">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="../framework/jquery.js"></script>
+    <script src="../framework/holder/holder.js"></script>
+    <script src="../framework/D3/d3.js"></script>
+    <script src="../framework/materialize/js/materialize.js"></script>
+    <link
+      href="http://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="../framework/materialize/css/materialize.css"
+    />
+    <link rel="stylesheet" href="../framework/custom/custom.css" />
+  </head>
+  <body>
+    <div class="container z-depth-1">
+      <div class="top_card">
+        <div class="row">
+          <div class="col l6 s12">
+            <div class="col l6 s6 input-field">
+              <i class="material-icons prefix">location_on</i>
+              <select id="areaSelect" onchange="selectChange()">
+                <option value="" disabled selected></option>
+              </select>
+              <label>地区选择</label>
+            </div>
+            <div class="col l6 s6 input-field">
+              <i class="material-icons prefix">playlist_add</i>
+              <select id="jczSelect">
+                <option value="" disabled selected></option>
+              </select>
+              <label>检测站选择</label>
+            </div>
+          </div>
+          <div class="col l6 s12">
+            <div class="col l6 s6 input-field">
+              <i class="material-icons prefix">play_arrow</i>
+              <input type="text" class="datepicker" id="stratDate" />
+              <label for="stratDate">开始日期</label>
+            </div>
+            <div class="col l6 s6 input-field">
+              <i class="material-icons prefix">stop</i>
+              <input type="text" class="datepicker" id="endDate" />
+              <label for="endDate">结束日期</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col l6 s12">
+            <div class="input-field col s8">
+              <i class="material-icons prefix">business</i>
+              <input
+                type="text"
+                id="autocomplete-input"
+                class="autocomplete"
+                oninput=""
+              />
+              <label for="autocomplete-input">检测站编号</label>
+            </div>
+            <div class="col s4 downItem1">
+              <a class="waves-effect waves-light btn" onclick="">
+                <i class="material-icons right">search</i>查询
+              </a>
+            </div>
+          </div>
+          <div class="col l6 s12">
+            <div class="col s6 downItem2 offset-s1">
+              <div class="switch">
+                <label>
+                  单站
+                  <input
+                    type="checkbox"
+                    id="switchCheck"
+                    onclick="viewState()"
+                  />
+                  <span class="lever"></span>
+                  区域
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container z-depth-1">
+      <div class="centerCard"></div>
+    </div>
+
+    <script>
+      $(document).ready(function () {
+        $(".datepicker").datepicker({
+          format: "yyyy年mm月dd日",
+          firstDay: 1,
+          showMonthAfterYear: true,
+          showClearBtn: true,
+          showDaysInNextAndPreviousMonths: true,
+          i18n: {
+            cancel: "取消",
+            clear: "清除",
+            done: "确定",
+            months: [
+              "一月",
+              "二月",
+              "三月",
+              "四月",
+              "五月",
+              "六月",
+              "七月",
+              "八月",
+              "九月",
+              "十月",
+              "十一月",
+              "十二月",
+            ],
+            monthsShort: [
+              "1月",
+              "2月",
+              "3月",
+              "4月",
+              "5月",
+              "6月",
+              "7月",
+              "8月",
+              "9月",
+              "10月",
+              "11月",
+              "12月",
+            ],
+            weekdays: ["周日", "周一", "周二", "周三", "周四", "周五", "周六"],
+            weekdaysShort: [
+              "周日",
+              "周一",
+              "周二",
+              "周三",
+              "周四",
+              "周五",
+              "周六",
+            ],
+            weekdaysAbbrev: ["日", "一", "二", "三", "四", "五", "六"],
+          },
+        });
+
+        $("#stratDate")
+          .datepicker("setDate", new Date("01/01/2020"))
+          .trigger("change");
+        $("#stratDate").val = "2020年01月01日";
+        $("#endDate")
+          .datepicker("setDate", new Date().toLocaleDateString())
+          .trigger("change");
+
+        new addAreaOption();
+
+        var jczObject = new Object();
+        $.getJSON("../file/jcz.json", function (jczDate) {
+          $.each(jczDate, function (Index, jczElem) {
+            jczObject[jczElem.jczbh] = "";
+            jczObject[jczElem.jczmc] = "";
+          });
+        });
+
+        $("#autocomplete-input").autocomplete({
+          data: jczObject,
+        });
+        // console.log(jczObject);
+      });
+
+      function selectChange() {
+        var selectedArea = $("#areaSelect").val();
+        var reg = new RegExp("^(" + selectedArea + ")(\\d{6})");
+        let selectType = typeof selectedArea;
+
+        if (selectType == "string") {
+          $.getJSON("../file/jcz.json", function (jczDate) {
+            $("#jczSelect").empty();
+            new addNullOption("jczSelect");
+            $.each(jczDate, function (Index, jczElem) {
+              var areaCodeNum = jczElem.jczbh;
+              var areaCodeStr = areaCodeNum.toString();
+              if (areaCodeStr.match(reg) !== null) {
+                var jczSelect = $("#jczSelect").formSelect();
+                jczSelect.append(
+                  $("<option></option>")
+                    .attr("value", jczElem.jczbh)
+                    .text(jczElem.jczmc)
+                );
+                $("#jczSelect").formSelect();
+              }
+            });
+          });
+        }
+        // else {
+        //   $("#jczSelect").formSelect();
+        // }
+      }
+
+      function addAreaOption() {
+        $.getJSON("../file/area.json", function (areaData) {
+          var areaSelect = $("#areaSelect").formSelect();
+          $.each(areaData, function (Index, cityElem) {
+            areaSelect.append(
+              $("<option></option>")
+                .attr("value", cityElem.areaCode)
+                .text(cityElem.city)
+            );
+          });
+          $("select").formSelect();
+        });
+      }
+
+      function addJczOption() {
+        $.getJSON("../file/jcz.json", function (jczDate) {
+          var jczSelect = $("#jczSelect").formSelect();
+          $.each(jczDate, function (Index, jczElem) {
+            jczSelect.append(
+              $("<option></option>")
+                .attr("value", jczElem.jczbh)
+                .text(jczElem.jczmc)
+            );
+          });
+          $("select").formSelect();
+        });
+      }
+
+      function addNullOption(targetElement) {
+        $("#" + targetElement)
+          .formSelect()
+          .append('<option value="" disabled selected></option>');
+      }
+
+      function viewState() {
+        var checkState = $("#switchCheck").is(":checked");
+        // console.log(checkState);
+        if (checkState == true) {
+          $("#areaSelect").attr("multiple", "multiple");
+          $("#jczSelect").attr("disabled", "disabled");
+        } else if (checkState == false) {
+          $("#areaSelect").empty();
+          $("#jczSelect").empty();
+          new addNullOption("areaSelect");
+          new addNullOption("jczSelect");
+          new addAreaOption();
+          new addJczOption();
+          $("#areaSelect").removeAttr("multiple");
+          $("#jczSelect").removeAttr("disabled");
+        }
+        $("select").formSelect();
+      }
+    </script>
+  </body>
+</html>

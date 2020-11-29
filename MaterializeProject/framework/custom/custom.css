@@ -1,0 +1,36 @@
+body {
+  background-image: linear-gradient(-270deg, #8a2387, #e94057, #f27121);
+  height: 100%;
+}
+
+.top_card {
+  margin: 0;
+  width: 100%;
+  padding-top: 20px;
+  margin-top: 40px;
+  background-color: white;
+}
+
+.centerCard {
+  margin: 0;
+  width: 100%;
+  padding-top: 20px;
+  height: 640px;
+  background-color: white;
+}
+
+.downItem1 {
+  padding-top: 24px !important;
+}
+.downItem2 {
+  padding-top: 30px !important;
+  padding-bottom: 30px !important;
+}
+
+.select-dropdown {
+  height: 400px;
+}
+
+/* .autocomplete-content {
+  height: 400px;
+} */
